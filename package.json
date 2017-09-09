@@ -9,6 +9,7 @@
   "author": "bfdegani",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.18.0",
     "consign": "^0.1.6",
     "express": "^4.15.4"
   }
