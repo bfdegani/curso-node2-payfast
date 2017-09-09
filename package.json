@@ -1,0 +1,15 @@
+{
+  "name": "payfast",
+  "version": "1.0.0",
+  "description": "aula api node (gateway de pagamentos)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "bfdegani",
+  "license": "ISC",
+  "dependencies": {
+    "consign": "^0.1.6",
+    "express": "^4.15.4"
+  }
+}
