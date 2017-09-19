@@ -11,6 +11,8 @@
   "dependencies": {
     "body-parser": "^1.18.0",
     "consign": "^0.1.6",
-    "express": "^4.15.4"
+    "express": "^4.15.4",
+    "express-validator": "^4.1.1",
+    "mysql": "^2.14.1"
   }
 }
