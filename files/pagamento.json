@@ -1,6 +1,6 @@
 {
   "forma_pagamento":"payfast",
-  "valor":"10.00",
-  "moeda":"BRL",
+  "valor":"100.00",
+  "moeda":"USD",
   "descricao":"dados do pagamento"
 }
