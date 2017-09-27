@@ -1,5 +1,28 @@
 module.exports = function(app) {
 
+function HATEOAS(pagamento_id){
+  //enriquecendo o retorno com as operações possíveis na api após a criação do pagamento
+  //Esse tipo de enriquecimento é conhecido como HATEOAS (Hypermedia as the Engine of Application State)
+  var links = [
+    {
+      href: "/pagamentos/pagamento/" + pagamento_id,
+      rel: "confirmar",
+      method: "PUT"
+    },
+    {
+      href: "/pagamentos/pagamento/" + pagamento_id,
+      rel: "cancelar",
+      method: "DELETE"
+    },
+    {
+      href: "/pagamentos/pagamento/" + pagamento_id,
+      rel: "buscar",
+      method: "GET"
+    }
+  ];
+  return links;
+}
+
   //lista todos os pagamentos
   app.get('/pagamentos',function(req, res) {
 
@@ -15,7 +38,10 @@ module.exports = function(app) {
       {
         console.log('pagamentos:');
         console.log(result);
-        res.status(200).json(result);
+        if(result == '')
+          res.status(404).json(result);
+        else
+          res.status(200).json(result);
       }
     });
   });
@@ -24,7 +50,7 @@ module.exports = function(app) {
   app.get('/pagamentos/pagamento/:id',function(req, res) {
 
     var id = req.params.id;
-    
+
     var connection = app.database.connectionFactory();
     var pagamentoDAO = new app.database.PagamentoDAO(connection);
     pagamentoDAO.buscaPorId(id, function(err,result){
@@ -36,7 +62,10 @@ module.exports = function(app) {
       {
         console.log('pagamento:');
         console.log(result);
-        res.status(200).json(result);
+        if(result == '')
+          res.status(404).json(result);
+        else
+          res.status(200).json(result);
       }
     });
   });
@@ -70,9 +99,14 @@ module.exports = function(app) {
             {
               console.log('pagamento criado');
               console.log(pagamento);
+              pagamento.id = result.insertId;
+              res.location('/pagamentos/pagamento/' + pagamento.id);
 
-              res.location('/pagamentos/pagamento/' + result.insertId);
-              res.status(201).json(pagamento); // http status 201: created
+              var response = {};
+              response.dados_do_pagamento = pagamento;
+              response.links = HATEOAS(pagamento.id);
+
+              res.status(201).json(response); // http status 201: created
             }
           });
         }
@@ -81,7 +115,7 @@ module.exports = function(app) {
 
   //altera status do pagamento para CONFIRMADO
   app.put('/pagamentos/pagamento/:id', function(req, res){
-    var pagamento = {}
+    var pagamento = {};
     var id = req.params.id;
 
     pagamento.id = id;
@@ -103,7 +137,6 @@ module.exports = function(app) {
       }
     });
   });
-
 
   // cancelamento do pagamento
   app.delete('/pagamentos/pagamento/:id', function(req, res){
