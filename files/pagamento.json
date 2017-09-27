@@ -1,6 +1,15 @@
 {
-  "forma_pagamento":"payfast",
-  "valor":"100.00",
-  "moeda":"USD",
-  "descricao":"dados do pagamento"
+  "pagamento": {
+    "forma_pagamento":"cartao",
+    "valor":"100.00",
+    "moeda":"USD",
+    "descricao":"dados do pagamento"
+  },
+  "cartao": {
+    "numero": "1234567890123456",
+    "bandeira": "VISA",
+    "ano_expiracao": "2030",
+    "mes_expiracao": "07",
+    "cvv": "123"
+  }
 }

@@ -73,9 +73,9 @@ function HATEOAS(pagamento_id){
   //cria um novo pagamento
   app.post('/pagamentos/pagamento', function(req,res){
 
-      req.assert("forma_pagamento", "Forma de pagamento obrigatoria").notEmpty();
-      req.assert("valor","Valor obrigatorio e decimal").notEmpty().isFloat();
-      req.assert("moeda", "Moeda obrigatoria").notEmpty();
+      req.assert("pagamento.forma_pagamento", "Forma de pagamento obrigatoria").notEmpty();
+      req.assert("pagamento.valor","Valor obrigatorio e decimal").notEmpty().isFloat();
+      req.assert("pagamento.moeda", "Moeda obrigatoria").notEmpty();
 
       req.getValidationResult().then(function(err){
         if(!err.isEmpty()){
@@ -84,7 +84,7 @@ function HATEOAS(pagamento_id){
           res.status(400).json(err.array());
         }
         else{
-          var pagamento = req.body;
+          var pagamento = req.body.pagamento;
           console.log(pagamento);
 
           var connection = app.database.connectionFactory();
@@ -100,6 +100,13 @@ function HATEOAS(pagamento_id){
               console.log('pagamento criado');
               console.log(pagamento);
               pagamento.id = result.insertId;
+
+              if(pagamento.forma_pagamento == 'cartao'){
+                var cartao = req.body.cartao;
+                console.log(cartao);
+                var clienteCartao = new app.servicos.ClienteCartoes();
+                clienteCartao.autoriza(cartao);
+              }
               res.location('/pagamentos/pagamento/' + pagamento.id);
 
               var response = {};

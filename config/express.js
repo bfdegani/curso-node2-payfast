@@ -10,7 +10,8 @@ module.exports = function() {
     app.use(validator());
 
     consign({cwd:'app'})
-      .include('routes')
+      .include('servicos')
+      .then('routes')
       .then('database')
       .into(app);
 
