@@ -73,6 +73,7 @@ function HATEOAS(pagamento_id){
   //cria um novo pagamento
   app.post('/pagamentos/pagamento', function(req,res){
 
+      // valida json de entrada
       req.assert("pagamento.forma_pagamento", "Forma de pagamento obrigatoria").notEmpty();
       req.assert("pagamento.valor","Valor obrigatorio e decimal").notEmpty().isFloat();
       req.assert("pagamento.moeda", "Moeda obrigatoria").notEmpty();
@@ -82,66 +83,78 @@ function HATEOAS(pagamento_id){
           console.log("arquivo de entrada apresenta erros: ");
           console.log(err.array());
           res.status(400).json(err.array());
+          return;
         }
-        else{
-          var pagamento = req.body.pagamento;
-          console.log(pagamento);
 
-          var connection = app.database.connectionFactory();
-          var pagamentoDAO = new app.database.PagamentoDAO(connection);
+        var pagamento = req.body.pagamento;
+        pagamento.status = 'CRIADO';
 
-          pagamentoDAO.salva(pagamento, function(err, result){
-            if(err){
-              console.log("erro ao criar pagamento:" + err);
-              res.status(500).json(err);
-            }
-            else
-            {
-              console.log('pagamento criado');
-              console.log(pagamento);
-              pagamento.id = result.insertId;
+        var infoResponse = {};
+        //console.log(pagamento);
 
-              if(pagamento.forma_pagamento == 'cartao'){
-                var cartao = req.body.cartao;
-                console.log(cartao);
-                var clienteCartao = new app.servicos.ClienteCartoes();
-                clienteCartao.autoriza(cartao);
-              }
-              res.location('/pagamentos/pagamento/' + pagamento.id);
+        //se for pagamento via cartao, autoriza
+        if(pagamento.forma_pagamento == 'cartao'){
+          var cartao = req.body.cartao;
+          infoResponse.dados_cartao = cartao;
 
-              var response = {};
-              response.dados_do_pagamento = pagamento;
-              response.links = HATEOAS(pagamento.id);
-
-              res.status(201).json(response); // http status 201: created
+          var clienteCartoes = new app.servicos.ClienteCartoes();
+          clienteCartoes.autoriza(cartao, function(erros, request, response, retorno){
+            if(erros){
+              console.log(erros);
+              res.status(400).send(erros);
+              return;
             }
           });
+          pagamento.status = 'AUTORIZADO';
         }
+
+        //cria registro do pagamento
+        var connection = app.database.connectionFactory();
+        var pagamentoDAO = new app.database.PagamentoDAO(connection);
+
+        pagamentoDAO.salva(pagamento, function(err, result){
+          if(err){
+            console.log("erro ao criar pagamento:" + err);
+            res.status(500).json(err);
+            return;
+          }
+
+          console.log('pagamento criado');
+          //console.log(pagamento);
+          pagamento.id = result.insertId;
+
+          res.location('/pagamentos/pagamento/' + pagamento.id);
+          infoResponse.dados_pagamento = pagamento;
+          infoResponse.links = HATEOAS(pagamento.id);
+
+          res.status(201).json(infoResponse); // http status 201: created
+        });
       });
-    });
 
-  //altera status do pagamento para CONFIRMADO
-  app.put('/pagamentos/pagamento/:id', function(req, res){
-    var pagamento = {};
-    var id = req.params.id;
+      //altera status do pagamento para CONFIRMADO
+      app.put('/pagamentos/pagamento/:id', function(req, res){
+        var pagamento = {};
+        var id = req.params.id;
 
-    pagamento.id = id;
-    pagamento.status = "CONFIRMADO";
+        pagamento.id = id;
+        pagamento.status = "CONFIRMADO";
 
-    var connection = app.database.connectionFactory();
-    var pagamentoDAO = new app.database.PagamentoDAO(connection);
+        var connection = app.database.connectionFactory();
+        var pagamentoDAO = new app.database.PagamentoDAO(connection);
 
-    pagamentoDAO.atualiza(pagamento, function(err){
-      if(err){
-        console.log("erro ao confirmar pagamento:" + err);
-        res.status(500).json(err);
-      }
-      else
-      {
-        console.log('pagamento confirmado');
-        console.log(pagamento);
-        res.status(200).json(pagamento);
-      }
+        pagamentoDAO.atualiza(pagamento, function(err){
+          if(err){
+            console.log("erro ao confirmar pagamento:" + err);
+            res.status(500).json(err);
+          }
+          else
+          {
+            console.log('pagamento confirmado');
+            console.log(pagamento);
+            res.status(200).json(pagamento);
+          }
+      });
+
     });
   });
 
