@@ -48,24 +48,39 @@ function HATEOAS(pagamento_id){
 
   //busca um pagamento especifico
   app.get('/pagamentos/pagamento/:id',function(req, res) {
-
     var id = req.params.id;
 
-    var connection = app.database.connectionFactory();
-    var pagamentoDAO = new app.database.PagamentoDAO(connection);
-    pagamentoDAO.buscaPorId(id, function(err,result){
-      if(err){
-        console.log("erro ao buscar pagamento " + id + ": "+ err);
-        res.status(500).json(err);
+    var mcClient = app.servicos.MemcachedClient();
+
+    mcClient.get('pagamento-' + id, function(erro, retorno){
+      if(!erro && retorno){
+        console.log('HIT - valor: ' + JSON.stringify(retorno));
+        res.status(200).json(retorno);
       }
-      else
-      {
-        console.log('pagamento:');
-        console.log(result);
-        if(result == '')
-          res.status(404).json(result);
-        else
-          res.status(200).json(result);
+      else {
+        console.log('MISS - chave não encontrada no cache');
+        var connection = app.database.connectionFactory();
+        var pagamentoDAO = new app.database.PagamentoDAO(connection);
+        pagamentoDAO.buscaPorId(id, function(err,result){
+          if(err){
+            console.log("erro ao buscar pagamento " + id + ": "+ err);
+            res.status(500).json(err);
+          }
+          else
+          {
+            console.log('pagamento:');
+            console.log(result);
+            if(result == '')
+              res.status(404).json(result);
+            else {
+              mcClient.set('pagamento-' + id, result, 10000, // validade do cache em ms
+                            function(erro){
+                              console.log('nova chave adicionada ao cache: pagamento-60');
+                            });
+              res.status(200).json(result);
+            }
+          }
+        });
       }
     });
   });
@@ -182,4 +197,5 @@ function HATEOAS(pagamento_id){
       }
     });
   });
+
 }
