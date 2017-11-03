@@ -6,7 +6,7 @@ function CorreiosSoapClient(){
 
 CorreiosSoapClient.prototype.calculaPrazo = function (dados, callback) {
   soap.createClient(this._url, function(erro, cliente){
-    console.log('cliente soap criado');
+    logger.info('cliente soap criado');
     cliente.CalcPrazo(dados, callback);
   });
 }

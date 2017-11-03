@@ -33,7 +33,7 @@ function HATEOAS(pagamento_id){
 
     pagamentoDAO.lista(function(err,result){
       if(err){
-        logger.info("erro ao listar pagamentos:" + err);
+        logger.error("erro ao listar pagamentos:" + err);
         res.status(500).json(err);
       }
       else
@@ -65,7 +65,7 @@ function HATEOAS(pagamento_id){
         var pagamentoDAO = new app.database.PagamentoDAO(connection);
         pagamentoDAO.buscaPorId(id, function(err,result){
           if(err){
-            logger.info("erro ao buscar pagamento " + id + ": "+ err);
+            logger.error("erro ao buscar pagamento " + id + ": "+ err);
             res.status(500).json(err);
           }
           else
@@ -97,8 +97,8 @@ function HATEOAS(pagamento_id){
 
       req.getValidationResult().then(function(err){
         if(!err.isEmpty()){
-          logger.info("arquivo de entrada apresenta erros: ");
-          logger.info(err.array());
+          logger.error("arquivo de entrada apresenta erros: ");
+          logger.error(err.array());
           res.status(400).json(err.array());
           return;
         }
@@ -117,7 +117,7 @@ function HATEOAS(pagamento_id){
           var clienteCartoes = new app.servicos.ClienteCartoes();
           clienteCartoes.autoriza(cartao, function(erros, request, response, retorno){
             if(erros){
-              logger.info(erros);
+              logger.error(erros);
               res.status(400).send(erros);
               return;
             }
@@ -131,7 +131,7 @@ function HATEOAS(pagamento_id){
 
         pagamentoDAO.salva(pagamento, function(err, result){
           if(err){
-            logger.info("erro ao criar pagamento:" + err);
+            logger.error("erro ao criar pagamento:" + err);
             res.status(500).json(err);
             return;
           }
@@ -162,7 +162,7 @@ function HATEOAS(pagamento_id){
 
         pagamentoDAO.atualiza(pagamento, function(err){
           if(err){
-            logger.info("erro ao confirmar pagamento:" + err);
+            logger.error("erro ao confirmar pagamento:" + err);
             res.status(500).json(err);
           }
           else
@@ -197,7 +197,7 @@ function HATEOAS(pagamento_id){
 
     pagamentoDAO.atualiza(pagamento, function(err){
       if(err){
-        logger.info("erro ao cancelar pagamento:" + err);
+        logger.error("erro ao cancelar pagamento:" + err);
         res.status(500).json(err);
       }
       else
@@ -213,7 +213,6 @@ function HATEOAS(pagamento_id){
           else
             logger.info('pagamento-' + id + ' não encontrado no cache');
         });
-
         res.status(200).json(pagamento);
       }
     });

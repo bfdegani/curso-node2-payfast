@@ -1,10 +1,11 @@
+var logger = require('../servicos/logger.js');
 var mysql = require('mysql');
 var pool;
 
 function connectionFactory(){
   if(!pool){
     if(process.env.NODE_ENV === 'production') {
-      console.log('running in remote production database');
+      logger.info('running in remote production database');
       pool = mysql.createPool({
         connectionLimit : 10,
         host : 'us-cdbr-iron-east-05.cleardb.net',
@@ -14,7 +15,7 @@ function connectionFactory(){
       })
     }
     else {
-      console.log('running in development database');
+      logger.info('running in development database');
       pool = mysql.createPool({
         connectionLimit : 10,
         host : 'localhost',
