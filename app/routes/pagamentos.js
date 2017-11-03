@@ -75,7 +75,7 @@ function HATEOAS(pagamento_id){
             else {
               mcClient.set('pagamento-' + id, result, 10000, // validade do cache em ms
                             function(erro){
-                              console.log('nova chave adicionada ao cache: pagamento-60');
+                              console.log('nova chave adicionada ao cache: pagamento-' + id);
                             });
               res.status(200).json(result);
             }
@@ -145,6 +145,7 @@ function HATEOAS(pagamento_id){
           res.status(201).json(infoResponse); // http status 201: created
         });
       });
+    });
 
       //altera status do pagamento para CONFIRMADO
       app.put('/pagamentos/pagamento/:id', function(req, res){
@@ -166,12 +167,20 @@ function HATEOAS(pagamento_id){
           {
             console.log('pagamento confirmado');
             console.log(pagamento);
+
+            //caso a informação do pagamento existe no cache, exclui para que não haja inconsistencia
+            var mcClient = app.servicos.MemcachedClient();
+            mcClient.del('pagamento-' + id, function(erro, retorno){
+              if(retorno)
+                console.log('pagamento-' + id + ' removido do cache');
+              else
+                console.log('pagamento-' + id + ' não encontrado no cache');
+            });
+
             res.status(200).json(pagamento);
           }
       });
-
     });
-  });
 
   // cancelamento do pagamento
   app.delete('/pagamentos/pagamento/:id', function(req, res){
@@ -193,6 +202,16 @@ function HATEOAS(pagamento_id){
       {
         console.log('pagamento cancelado');
         console.log(pagamento);
+
+        //caso a informação do pagamento existe no cache, exclui para que não haja inconsistencia
+        var mcClient = app.servicos.MemcachedClient();
+        mcClient.del('pagamento-' + id, function(erro, retorno){
+          if(retorno)
+            console.log('pagamento-' + id + ' removido do cache');
+          else
+            console.log('pagamento-' + id + ' não encontrado no cache');
+        });
+
         res.status(200).json(pagamento);
       }
     });
