@@ -1,3 +1,5 @@
+var logger = require('../servicos/logger.js');
+
 module.exports = function(app) {
 
 function HATEOAS(pagamento_id){
@@ -31,13 +33,13 @@ function HATEOAS(pagamento_id){
 
     pagamentoDAO.lista(function(err,result){
       if(err){
-        console.log("erro ao listar pagamentos:" + err);
+        logger.info("erro ao listar pagamentos:" + err);
         res.status(500).json(err);
       }
       else
       {
-        console.log('pagamentos:');
-        console.log(result);
+        logger.info('pagamentos:');
+        logger.info(result);
         if(result == '')
           res.status(404).json(result);
         else
@@ -54,28 +56,28 @@ function HATEOAS(pagamento_id){
 
     mcClient.get('pagamento-' + id, function(erro, retorno){
       if(!erro && retorno){
-        console.log('HIT - valor: ' + JSON.stringify(retorno));
+        logger.info('HIT - valor: ' + JSON.stringify(retorno));
         res.status(200).json(retorno);
       }
       else {
-        console.log('MISS - chave não encontrada no cache');
+        logger.info('MISS - chave não encontrada no cache');
         var connection = app.database.connectionFactory();
         var pagamentoDAO = new app.database.PagamentoDAO(connection);
         pagamentoDAO.buscaPorId(id, function(err,result){
           if(err){
-            console.log("erro ao buscar pagamento " + id + ": "+ err);
+            logger.info("erro ao buscar pagamento " + id + ": "+ err);
             res.status(500).json(err);
           }
           else
           {
-            console.log('pagamento:');
-            console.log(result);
+            logger.info('pagamento:');
+            logger.info(result);
             if(result == '')
               res.status(404).json(result);
             else {
               mcClient.set('pagamento-' + id, result, 10000, // validade do cache em ms
                             function(erro){
-                              console.log('nova chave adicionada ao cache: pagamento-' + id);
+                              logger.info('nova chave adicionada ao cache: pagamento-' + id);
                             });
               res.status(200).json(result);
             }
@@ -95,8 +97,8 @@ function HATEOAS(pagamento_id){
 
       req.getValidationResult().then(function(err){
         if(!err.isEmpty()){
-          console.log("arquivo de entrada apresenta erros: ");
-          console.log(err.array());
+          logger.info("arquivo de entrada apresenta erros: ");
+          logger.info(err.array());
           res.status(400).json(err.array());
           return;
         }
@@ -105,7 +107,7 @@ function HATEOAS(pagamento_id){
         pagamento.status = 'CRIADO';
 
         var infoResponse = {};
-        //console.log(pagamento);
+        //logger.info(pagamento);
 
         //se for pagamento via cartao, autoriza
         if(pagamento.forma_pagamento == 'cartao'){
@@ -115,7 +117,7 @@ function HATEOAS(pagamento_id){
           var clienteCartoes = new app.servicos.ClienteCartoes();
           clienteCartoes.autoriza(cartao, function(erros, request, response, retorno){
             if(erros){
-              console.log(erros);
+              logger.info(erros);
               res.status(400).send(erros);
               return;
             }
@@ -129,13 +131,13 @@ function HATEOAS(pagamento_id){
 
         pagamentoDAO.salva(pagamento, function(err, result){
           if(err){
-            console.log("erro ao criar pagamento:" + err);
+            logger.info("erro ao criar pagamento:" + err);
             res.status(500).json(err);
             return;
           }
 
-          console.log('pagamento criado');
-          //console.log(pagamento);
+          logger.info('pagamento criado');
+          //logger.info(pagamento);
           pagamento.id = result.insertId;
 
           res.location('/pagamentos/pagamento/' + pagamento.id);
@@ -160,21 +162,21 @@ function HATEOAS(pagamento_id){
 
         pagamentoDAO.atualiza(pagamento, function(err){
           if(err){
-            console.log("erro ao confirmar pagamento:" + err);
+            logger.info("erro ao confirmar pagamento:" + err);
             res.status(500).json(err);
           }
           else
           {
-            console.log('pagamento confirmado');
-            console.log(pagamento);
+            logger.info('pagamento confirmado');
+            logger.info(pagamento);
 
             //caso a informação do pagamento existe no cache, exclui para que não haja inconsistencia
             var mcClient = app.servicos.MemcachedClient();
             mcClient.del('pagamento-' + id, function(erro, retorno){
               if(retorno)
-                console.log('pagamento-' + id + ' removido do cache');
+                logger.info('pagamento-' + id + ' removido do cache');
               else
-                console.log('pagamento-' + id + ' não encontrado no cache');
+                logger.info('pagamento-' + id + ' não encontrado no cache');
             });
 
             res.status(200).json(pagamento);
@@ -195,21 +197,21 @@ function HATEOAS(pagamento_id){
 
     pagamentoDAO.atualiza(pagamento, function(err){
       if(err){
-        console.log("erro ao cancelar pagamento:" + err);
+        logger.info("erro ao cancelar pagamento:" + err);
         res.status(500).json(err);
       }
       else
       {
-        console.log('pagamento cancelado');
-        console.log(pagamento);
+        logger.info('pagamento cancelado');
+        logger.info(pagamento);
 
         //caso a informação do pagamento existe no cache, exclui para que não haja inconsistencia
         var mcClient = app.servicos.MemcachedClient();
         mcClient.del('pagamento-' + id, function(erro, retorno){
           if(retorno)
-            console.log('pagamento-' + id + ' removido do cache');
+            logger.info('pagamento-' + id + ' removido do cache');
           else
-            console.log('pagamento-' + id + ' não encontrado no cache');
+            logger.info('pagamento-' + id + ' não encontrado no cache');
         });
 
         res.status(200).json(pagamento);

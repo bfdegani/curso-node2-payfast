@@ -1,0 +1,8 @@
+{"level":"info","message":"Log level info com winston","timestamp":"2017-11-03T14:18:12.333Z"}
+{"level":"info","message":"Log level info com winston","timestamp":"2017-11-03T14:22:10.859Z"}
+{"level":"info","message":"HIT - valor: [{\"id\":60,\"forma_pagamento\":\"cartao\",\"valor\":100,\"moeda\":\"USD\",\"status\":\"CANCELADO\",\"data\":\"2017-10-23T02:31:42.000Z\",\"descricao\":\"dados do pagamento\"}]","timestamp":"2017-11-03T14:33:12.387Z"}
+{"level":"info","message":"HIT - valor: [{\"id\":60,\"forma_pagamento\":\"cartao\",\"valor\":100,\"moeda\":\"USD\",\"status\":\"CANCELADO\",\"data\":\"2017-10-23T02:31:42.000Z\",\"descricao\":\"dados do pagamento\"}]","timestamp":"2017-11-03T14:40:55.824Z"}
+{"level":"info","message":"MISS - chave não encontrada no cache","timestamp":"2017-11-03T14:41:15.800Z"}
+{"level":"info","message":"pagamento:","timestamp":"2017-11-03T14:41:15.874Z"}
+[{"id":61,"forma_pagamento":"cartao","valor":100,"moeda":"USD","status":"CONFIRMADO","data":"2017-10-23T02:33:46.000Z","descricao":"dados do pagamento"}]
+{"level":"info","message":"nova chave adicionada ao cache: pagamento-61","timestamp":"2017-11-03T14:41:15.879Z"}
